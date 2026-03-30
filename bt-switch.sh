@@ -10,6 +10,10 @@ export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 CONFIG="${1:?Usage: bt-switch.sh <config_file>}"
 source "$CONFIG"
 
+# Clear log on startup (launchd redirects stdout to the log file)
+truncate -s 0 /tmp/bt-switch-macmini.log 2>/dev/null
+truncate -s 0 /tmp/bt-switch-macbook.log 2>/dev/null
+
 # PID of in-flight connect/disconnect background job
 action_pid=""
 
