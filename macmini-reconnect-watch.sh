@@ -6,6 +6,7 @@
 
 KEYBOARD="38-09-fb-12-33-82"
 TRACKPAD="04-41-a5-8b-59-88"
+MX_MASTER="db-2d-99-05-2b-82"
 
 log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') $*"
@@ -16,9 +17,10 @@ is_connected() {
 }
 
 connect_devices() {
-    log "Connecting keyboard and trackpad to Mac Mini"
+    log "Connecting keyboard, trackpad, and MX Master to Mac Mini"
     blueutil --connect "$KEYBOARD"
     blueutil --connect "$TRACKPAD"
+    blueutil --connect "$MX_MASTER"
 }
 
 # Mac Mini is the default host — claim devices immediately on launch
@@ -28,19 +30,22 @@ connect_devices
 while true; do
     kb_connected=false
     tp_connected=false
+    mx_connected=false
 
     is_connected "$KEYBOARD" && kb_connected=true
     is_connected "$TRACKPAD" && tp_connected=true
+    is_connected "$MX_MASTER" && mx_connected=true
 
-    if ! $kb_connected && ! $tp_connected; then
-        log "Both devices disconnected — waiting 3s before reclaiming"
+    if ! $kb_connected && ! $tp_connected && ! $mx_connected; then
+        log "All devices disconnected — waiting 3s before reclaiming"
         sleep 3
 
         # Re-check: MacBook may have grabbed them intentionally
         is_connected "$KEYBOARD" && kb_connected=true
         is_connected "$TRACKPAD" && tp_connected=true
+        is_connected "$MX_MASTER" && mx_connected=true
 
-        if ! $kb_connected && ! $tp_connected; then
+        if ! $kb_connected && ! $tp_connected && ! $mx_connected; then
             connect_devices
         else
             log "At least one device reconnected elsewhere — leaving alone"

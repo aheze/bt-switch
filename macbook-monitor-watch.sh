@@ -9,6 +9,7 @@ export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 
 KEYBOARD="38-09-fb-12-33-82"
 TRACKPAD="04-41-a5-8b-59-88"
+MX_MASTER="db-2d-99-05-2b-82"
 
 # Number of displays when only the built-in screen is active
 BUILTIN_DISPLAY_COUNT=1
@@ -22,15 +23,17 @@ display_count() {
 }
 
 connect_devices() {
-    log "Monitor detected — connecting keyboard and trackpad to MacBook"
+    log "Monitor detected — connecting keyboard, trackpad, and MX Master to MacBook"
     blueutil --connect "$KEYBOARD"
     blueutil --connect "$TRACKPAD"
+    blueutil --connect "$MX_MASTER"
 }
 
 disconnect_devices() {
-    log "Monitor removed — disconnecting keyboard and trackpad"
+    log "Monitor removed — disconnecting keyboard, trackpad, and MX Master"
     blueutil --disconnect "$KEYBOARD"
     blueutil --disconnect "$TRACKPAD"
+    blueutil --disconnect "$MX_MASTER"
 }
 
 # Track previous state to avoid redundant calls

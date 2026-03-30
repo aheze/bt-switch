@@ -19,6 +19,12 @@
     <key>RunAtLoad</key>
     <true/>
 
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    </dict>
+
     <key>StandardOutPath</key>
     <string>/tmp/bt-switch-macbook.log</string>
 
