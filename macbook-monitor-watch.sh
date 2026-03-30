@@ -4,6 +4,9 @@
 # Monitor plugged in  → connect keyboard + trackpad to MacBook
 # Monitor unplugged   → disconnect them (Mac Mini will reclaim)
 
+# Ensure Homebrew binaries are available (launchd has a minimal PATH)
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+
 KEYBOARD="38-09-fb-12-33-82"
 TRACKPAD="04-41-a5-8b-59-88"
 
