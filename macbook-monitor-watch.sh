@@ -19,7 +19,7 @@ log() {
 }
 
 display_count() {
-    /usr/local/bin/display-count 2>/dev/null
+    osascript -l JavaScript -e 'ObjC.import("AppKit"); $.NSScreen.screens.count' 2>/dev/null
 }
 
 connect_devices() {
