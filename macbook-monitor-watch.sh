@@ -24,9 +24,21 @@ display_count() {
 
 connect_devices() {
     log "Monitor detected — connecting keyboard, trackpad, and MX Master to MacBook"
-    blueutil --connect "$KEYBOARD"
-    blueutil --connect "$TRACKPAD"
-    blueutil --connect "$MX_MASTER"
+    for attempt in 1 2 3 4 5; do
+        blueutil --connect "$KEYBOARD"
+        blueutil --connect "$TRACKPAD"
+        blueutil --connect "$MX_MASTER"
+        sleep 2
+        kb=$(blueutil --is-connected "$KEYBOARD" 2>/dev/null)
+        tp=$(blueutil --is-connected "$TRACKPAD" 2>/dev/null)
+        mx=$(blueutil --is-connected "$MX_MASTER" 2>/dev/null)
+        if [ "$kb" = "1" ] && [ "$tp" = "1" ] && [ "$mx" = "1" ]; then
+            log "All devices connected on attempt $attempt"
+            return
+        fi
+        log "Attempt $attempt failed (kb=$kb tp=$tp mx=$mx) — retrying"
+    done
+    log "Could not connect all devices after 5 attempts"
 }
 
 disconnect_devices() {
@@ -57,5 +69,5 @@ while true; do
         prev_state="$state"
     fi
 
-    sleep 4
+    sleep 2
 done
