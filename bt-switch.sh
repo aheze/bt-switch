@@ -47,11 +47,21 @@ connect_devices() {
     log "Could not connect all devices after 5 attempts"
 }
 
+any_connected() {
+    [ "$(blueutil --is-connected "$KEYBOARD" 2>/dev/null)" = "1" ] ||
+    [ "$(blueutil --is-connected "$TRACKPAD" 2>/dev/null)" = "1" ] ||
+    [ "$(blueutil --is-connected "$MX_MASTER" 2>/dev/null)" = "1" ]
+}
+
 disconnect_devices() {
+    if ! any_connected; then
+        log "Monitor removed — devices already disconnected"
+        return
+    fi
     log "Monitor removed — disconnecting devices"
-    blueutil --disconnect "$KEYBOARD"
-    blueutil --disconnect "$TRACKPAD"
-    blueutil --disconnect "$MX_MASTER"
+    [ "$(blueutil --is-connected "$KEYBOARD" 2>/dev/null)" = "1" ]  && blueutil --disconnect "$KEYBOARD"
+    [ "$(blueutil --is-connected "$TRACKPAD" 2>/dev/null)" = "1" ]  && blueutil --disconnect "$TRACKPAD"
+    [ "$(blueutil --is-connected "$MX_MASTER" 2>/dev/null)" = "1" ] && blueutil --disconnect "$MX_MASTER"
 }
 
 prev_state=""
