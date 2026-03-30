@@ -1,9 +1,9 @@
 #!/bin/bash
 # bt-switch.sh — unified script for both Mac Mini and MacBook
-# Watches display count. Monitor plugged in → connect devices. Monitor removed → disconnect.
-# Usage: bt-switch.sh <builtin_display_count>
-#   Mac Mini (no built-in display): bt-switch.sh 0
-#   MacBook (has built-in display):  bt-switch.sh 1
+# Watches display state. Monitor plugged in → connect devices. Monitor removed → disconnect.
+# Usage: bt-switch.sh <default_width>
+#   Mac Mini: bt-switch.sh 1920  (virtual display width when no monitor)
+#   MacBook:  bt-switch.sh 1728  (built-in display width)
 
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 
@@ -11,14 +11,21 @@ KEYBOARD="38-09-fb-12-33-82"
 TRACKPAD="04-41-a5-8b-59-88"
 MX_MASTER="db-2d-99-05-2b-82"
 
-BUILTIN_DISPLAY_COUNT="${1:?Usage: bt-switch.sh <builtin_display_count>}"
+DEFAULT_WIDTH="${1:?Usage: bt-switch.sh <default_width>}"
+
+# PID of in-flight connect/disconnect background job
+action_pid=""
 
 log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') $*"
 }
 
-display_count() {
-    osascript -l JavaScript -e 'ObjC.import("AppKit"); $.NSScreen.screens.count' 2>/dev/null
+get_screen_width() {
+    osascript -l JavaScript -e 'ObjC.import("AppKit"); $.NSScreen.screens.objectAtIndex(0).frame.size.width' 2>/dev/null
+}
+
+has_external_monitor() {
+    [ "$1" != "$DEFAULT_WIDTH" ]
 }
 
 all_connected() {
@@ -27,7 +34,22 @@ all_connected() {
     [ "$(blueutil --is-connected "$MX_MASTER" 2>/dev/null)" = "1" ]
 }
 
-connect_devices() {
+any_connected() {
+    [ "$(blueutil --is-connected "$KEYBOARD" 2>/dev/null)" = "1" ] ||
+    [ "$(blueutil --is-connected "$TRACKPAD" 2>/dev/null)" = "1" ] ||
+    [ "$(blueutil --is-connected "$MX_MASTER" 2>/dev/null)" = "1" ]
+}
+
+cancel_inflight() {
+    if [ -n "$action_pid" ] && kill -0 "$action_pid" 2>/dev/null; then
+        kill "$action_pid" 2>/dev/null
+        wait "$action_pid" 2>/dev/null
+        log "Cancelled in-flight action"
+    fi
+    action_pid=""
+}
+
+do_connect() {
     if all_connected; then
         log "Monitor detected — all devices already connected"
         return
@@ -47,13 +69,7 @@ connect_devices() {
     log "Could not connect all devices after 5 attempts"
 }
 
-any_connected() {
-    [ "$(blueutil --is-connected "$KEYBOARD" 2>/dev/null)" = "1" ] ||
-    [ "$(blueutil --is-connected "$TRACKPAD" 2>/dev/null)" = "1" ] ||
-    [ "$(blueutil --is-connected "$MX_MASTER" 2>/dev/null)" = "1" ]
-}
-
-disconnect_devices() {
+do_disconnect() {
     if ! any_connected; then
         log "Monitor removed — devices already disconnected"
         return
@@ -66,30 +82,31 @@ disconnect_devices() {
 
 prev_state=""
 
-log "Script started (builtin_display_count=$BUILTIN_DISPLAY_COUNT)"
+log "Script started (default_width=$DEFAULT_WIDTH)"
 
 while true; do
-    count=$(display_count)
+    info=$(get_screen_width)
 
-    if [ "$count" -gt "$BUILTIN_DISPLAY_COUNT" ]; then
+    if has_external_monitor "$info"; then
         state="monitor"
     else
         state="no_monitor"
     fi
 
+    log "poll: display_info=$info state=$state"
+
     if [ "$state" != "$prev_state" ]; then
+        cancel_inflight
+
         if [ "$state" = "monitor" ]; then
-            sleep 3
-            # Re-check after delay to avoid false triggers
-            count=$(display_count)
-            if [ "$count" -gt "$BUILTIN_DISPLAY_COUNT" ]; then
-                connect_devices
-            fi
+            (sleep 3 && do_connect) &
+            action_pid=$!
         else
-            disconnect_devices
+            do_disconnect &
+            action_pid=$!
         fi
         prev_state="$state"
     fi
 
-    sleep 2
+    sleep 0.5
 done

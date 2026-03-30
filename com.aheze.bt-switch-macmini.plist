@@ -9,7 +9,7 @@
     <array>
         <string>/bin/bash</string>
         <string>/usr/local/bin/bt-switch.sh</string>
-        <string>0</string>
+        <string>1920</string>
     </array>
 
     <!-- Restart automatically if the script exits -->
