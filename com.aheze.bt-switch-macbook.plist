@@ -9,7 +9,7 @@
     <array>
         <string>/bin/bash</string>
         <string>/usr/local/bin/bt-switch.sh</string>
-        <string>1728</string>
+        <string>/usr/local/etc/bt-switch.conf</string>
     </array>
 
     <!-- Restart automatically if the script exits -->

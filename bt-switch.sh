@@ -1,17 +1,14 @@
 #!/bin/bash
 # bt-switch.sh — unified script for both Mac Mini and MacBook
 # Watches display state. Monitor plugged in → connect devices. Monitor removed → disconnect.
-# Usage: bt-switch.sh <default_width>
-#   Mac Mini: bt-switch.sh 1920  (virtual display width when no monitor)
-#   MacBook:  bt-switch.sh 1728  (built-in display width)
+# Usage: bt-switch.sh <config_file>
+#   Mac Mini: bt-switch.sh /usr/local/etc/bt-switch.conf
+#   MacBook:  bt-switch.sh /usr/local/etc/bt-switch.conf
 
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 
-KEYBOARD="38-09-fb-12-33-82"
-TRACKPAD="04-41-a5-8b-59-88"
-MX_MASTER="db-2d-99-05-2b-82"
-
-DEFAULT_WIDTH="${1:?Usage: bt-switch.sh <default_width>}"
+CONFIG="${1:?Usage: bt-switch.sh <config_file>}"
+source "$CONFIG"
 
 # PID of in-flight connect/disconnect background job
 action_pid=""
