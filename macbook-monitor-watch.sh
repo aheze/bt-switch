@@ -19,7 +19,7 @@ log() {
 }
 
 display_count() {
-    swift -e 'import CoreGraphics; var count: UInt32 = 0; CGGetActiveDisplayList(0, nil, &count); print(count)' 2>/dev/null
+    /usr/local/bin/display-count 2>/dev/null
 }
 
 connect_devices() {
